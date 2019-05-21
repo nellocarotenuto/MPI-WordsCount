@@ -40,6 +40,13 @@ void print_words_map(words_map *map);
  */
 words_map *merge_words_maps(int maps_count, ...);
 
+
+/*
+ * Create a new map containing the words of the maps passed in the array parameter and return its address.
+ * This function doesn't deallocate the maps passed as arguments.
+ */
+words_map *merge_words_maps_array(int maps_count, words_map **maps);
+
 /*
  * Deallocate the map at the specified address,
  */

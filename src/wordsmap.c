@@ -70,12 +70,20 @@ void update_words_map_with_count(words_map *map, const char *word, int count) {
 
 
 void print_words_map(words_map *map) {
+    printf("%4s %-103s %11s\n", "List", "Word", "Occurrences");
+
+    for (int i = 0; i < 120; i++) {
+        printf("-");
+    }
+
+    printf("\n\n");
+
 
     for (int i = 0; i < NUMBER_OF_LISTS; i++) {
         node *item = map->lists[i];
 
         while (item) {
-            printf("%-20s - %3d\n", item->word, item->count);
+            printf("%4d %-103s %11d\n", i, item->word, item->count);
             item = item->next;
         }
 
@@ -105,6 +113,26 @@ words_map *merge_words_maps(int maps_count, ...) {
     }
 
     va_end(maps_list);
+
+    return map;
+}
+
+
+words_map *merge_words_maps_array(int maps_count, words_map **maps) {
+    words_map *map = create_words_map();
+
+    for (int i = 0; i < maps_count; i++) {
+        words_map *arg_map = maps[i];
+
+        for (int j = 0; j < NUMBER_OF_LISTS; j++) {
+            node *item = arg_map->lists[j];
+
+            while (item) {
+                update_words_map_with_count(map, item->word, item->count);
+                item = item->next;
+            }
+        }
+    }
 
     return map;
 }
