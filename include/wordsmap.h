@@ -24,6 +24,12 @@ words_map *create_map(void);
 void update_map(words_map *map, const char *word);
 
 /*
+ * Update the map at the specified address with the passed word. This function adds the word with the passed number of
+ * occurrences to the map if it does not already exist in the latter or updates its count otherwise.
+ */
+void update_map_with_count(words_map *map, const char *word, int count);
+
+/*
  * Print the content of the specified map.
  */
 void print_map(words_map *map);

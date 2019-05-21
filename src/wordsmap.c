@@ -33,7 +33,13 @@ words_map *create_map() {
     return map;
 }
 
+
 void update_map(words_map *map, const char *word) {
+    update_map_with_count(map, word, 1);
+}
+
+
+void update_map_with_count(words_map *map, const char *word, int count) {
     unsigned int digest_length = DIGEST_LENGTH;
     unsigned char *digest = calloc(digest_length, sizeof(unsigned char));
 
@@ -55,12 +61,13 @@ void update_map(words_map *map, const char *word) {
         item->word = calloc(length + 1, sizeof(char));
         strcpy(item->word, word);
 
-        item->count = 1;
+        item->count = count;
     } else {
-        item->count++;
+        item->count += count;
     }
 
 }
+
 
 void print_map(words_map *map) {
 
@@ -91,7 +98,7 @@ words_map *merge_maps(int maps_count, ...) {
             node *item = arg_map->lists[j];
 
             while (item) {
-                update_map(map, item->word);
+                update_map_with_count(map, item->word, item->count);
                 item = item->next;
             }
         }
@@ -101,6 +108,7 @@ words_map *merge_maps(int maps_count, ...) {
 
     return map;
 }
+
 
 node *lookup(const words_map *map, int list_index, const char *word) {
     node *item = map->lists[list_index];
@@ -120,6 +128,7 @@ node *lookup(const words_map *map, int list_index, const char *word) {
     return item;
 }
 
+
 void free_map(words_map *map) {
     for (int i = 0; i < NUMBER_OF_LISTS; i++) {
         node *item = map->lists[i];
@@ -135,6 +144,7 @@ void free_map(words_map *map) {
 
     free(map);
 }
+
 
 void digest_word(const unsigned char *word, size_t word_length, unsigned char **digest, unsigned int *digest_length) {
     EVP_MD_CTX * digest_context = EVP_MD_CTX_create();
