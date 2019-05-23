@@ -11,6 +11,7 @@ typedef struct file_info {
  */
 typedef struct workloads_map {
     int workers_count;
+    int *lists_length;
     struct file_section **lists;
 } workloads_map;
 

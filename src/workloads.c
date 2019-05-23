@@ -18,6 +18,7 @@ workloads_map *create_workloads_map(int workers_count, int files_count, ...) {
     workloads_map *map = malloc(sizeof(workloads_map *));
     map->workers_count = workers_count;
     map->lists = calloc(map->workers_count, sizeof(file_section *));
+    map->lists_length = calloc(map->workers_count, sizeof(int));
 
     int total_size = 0;
     file_info infos[files_count];
@@ -142,4 +143,6 @@ void add_section(workloads_map *map, int worker, file_section *section) {
         section->next = list;
         map->lists[worker] = section;
     }
+
+    map->lists_length[worker]++;
 }
