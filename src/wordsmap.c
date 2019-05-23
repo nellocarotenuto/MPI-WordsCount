@@ -29,6 +29,7 @@ node *lookup(const words_map *map, int list_index, const char *word);
 words_map *create_words_map() {
     words_map *map = malloc(sizeof(words_map *));
     map->lists = calloc(NUMBER_OF_LISTS, sizeof(node *));
+    map->lists_length = calloc(NUMBER_OF_LISTS, sizeof(int));
 
     return map;
 }
@@ -62,6 +63,7 @@ void update_words_map_with_count(words_map *map, const char *word, int count) {
         strcpy(item->word, word);
 
         item->count = count;
+        map->lists_length[index]++;
     } else {
         item->count += count;
     }

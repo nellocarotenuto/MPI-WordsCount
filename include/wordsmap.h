@@ -4,6 +4,7 @@
  */
 typedef struct words_map {
     struct node **lists;
+    int *lists_length;
 } words_map;
 
 typedef struct node {
