@@ -31,6 +31,11 @@ workloads_map *create_workloads_map(int workers_count, int files_count, ...) {
     for (int i = 0; i < files_count; i++) {
         char *file_name = va_arg(file_list, char *);
 
+        if (strlen(file_name) > FILE_NAME_MAX_LENGTH) {
+            printf("The file %s's name is too long.\n", file_name);
+            exit(1);
+        }
+
         if (access(file_name, R_OK)) {
             printf("The file %s could not be opened.\n", file_name);
             exit(1);
