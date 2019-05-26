@@ -56,7 +56,7 @@ workloads_map *create_workloads_map(int workers_count, int files_count, ...) {
         int file_index = 0;
 
         while (file_index < infos[i].size) {
-            file_section_node *section = malloc(sizeof(file_section_node));
+            file_section_node *section = calloc(1, sizeof(file_section_node));
 
             strcpy(section->file_name, infos[i].file_name);
             section->start_index = file_index;
