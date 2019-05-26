@@ -11,13 +11,13 @@
  * Helper function that gets a map, a worker and a section and adds the section to the worker's workloads list in the
  * map.
  */
-void add_section(workloads_map *map, int worker, file_section *section);
+void add_section(workloads_map *map, int worker, file_section_node *section);
 
 
 workloads_map *create_workloads_map(int workers_count, int files_count, ...) {
     workloads_map *map = malloc(sizeof(workloads_map *));
     map->workers_count = workers_count;
-    map->lists = calloc(map->workers_count, sizeof(file_section *));
+    map->lists = calloc(map->workers_count, sizeof(file_section_node *));
     map->lists_length = calloc(map->workers_count, sizeof(int));
 
     int total_size = 0;
@@ -31,6 +31,11 @@ workloads_map *create_workloads_map(int workers_count, int files_count, ...) {
     for (int i = 0; i < files_count; i++) {
         char *file_name = va_arg(file_list, char *);
 
+        if (strlen(file_name) > FILE_NAME_MAX_LENGTH) {
+            printf("The file %s's name is too long.\n", file_name);
+            exit(1);
+        }
+
         if (access(file_name, R_OK)) {
             printf("The file %s could not be opened.\n", file_name);
             exit(1);
@@ -38,7 +43,6 @@ workloads_map *create_workloads_map(int workers_count, int files_count, ...) {
 
         stat(file_name, &stats);
 
-        infos[i].file_name = calloc(strlen(file_name) + 1, sizeof(char *));
         strcpy(infos[i].file_name, file_name);
         infos[i].size = stats.st_size;
 
@@ -57,9 +61,9 @@ workloads_map *create_workloads_map(int workers_count, int files_count, ...) {
         int file_index = 0;
 
         while (file_index < infos[i].size) {
-            file_section *section = malloc(sizeof(file_section *));
+            file_section_node *section = malloc(sizeof(file_section_node));
 
-            section->file_name = infos[i].file_name;
+            strcpy(section->file_name, infos[i].file_name);
             section->start_index = file_index;
 
             file_index += section_size - worker_index;
@@ -101,7 +105,7 @@ void print_workloads_map(workloads_map *map) {
     printf("\n\n");
 
     for (int i = 0; i < map->workers_count; i++) {
-        file_section *section = map->lists[i];
+        file_section_node *section = map->lists[i];
 
         while (section) {
             printf("%6d %-101s %5d %5d\n", i, section->file_name, section->start_index, section->end_index);
@@ -113,10 +117,10 @@ void print_workloads_map(workloads_map *map) {
 
 void free_workloads_map(workloads_map *map) {
     for (int i = 0; i < map->workers_count; i++) {
-        file_section *section = map->lists[i];
+        file_section_node *section = map->lists[i];
 
         while (section) {
-            file_section *temp = section;
+            file_section_node *temp = section;
             section = section->next;
 
             free(temp->file_name);
@@ -128,14 +132,14 @@ void free_workloads_map(workloads_map *map) {
 }
 
 
-void add_section(workloads_map *map, int worker, file_section *section) {
+void add_section(workloads_map *map, int worker, file_section_node *section) {
     if (worker < 0 || worker >= map->workers_count) {
         printf("Unable to add section to the map because the worker to assign it must be non-negative and less than %d"
                ".\n", map->workers_count);
         exit(1);
     }
 
-    file_section *list = map->lists[worker];
+    file_section_node *list = map->lists[worker];
 
     if (!list) {
         map->lists[worker] = section;
