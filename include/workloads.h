@@ -1,6 +1,5 @@
 #define FILE_NAME_MAX_LENGTH 64
 
-
 /*
  * Defines files metadata binding a file name to the actual file size.
  */
