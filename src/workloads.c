@@ -63,14 +63,14 @@ workloads_map *create_workloads_map(int workers_count, int files_count, ...) {
 
             file_index += section_size - worker_index;
 
-            if (remainder > 0) {
-                file_index++;
-                remainder--;
-            }
-
             if (file_index > infos[i].size) {
                 section->end_index = infos[i].size;
             } else {
+                if ((file_index + 1) <= infos[i].size && remainder > 0) {
+                    file_index++;
+                    remainder--;
+                }
+
                 section->end_index = file_index;
             }
 
@@ -128,8 +128,8 @@ void free_workloads_map(workloads_map *map) {
 
 void add_section(workloads_map *map, int worker, file_section_node *section) {
     if (worker < 0 || worker >= map->workers_count) {
-        printf("Unable to add section to the map because the worker to assign it must be non-negative and less than %d"
-               ".\n", map->workers_count);
+        printf("Unable to add section to the map. Requested worker (%d) must be between 0 and %d"
+               ".\n", worker, map->workers_count);
         exit(1);
     }
 
