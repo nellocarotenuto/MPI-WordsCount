@@ -14,7 +14,25 @@
 void add_section(workloads_map *map, int worker, file_section_node *section);
 
 
-workloads_map *create_workloads_map(int workers_count, int files_count, ...) {
+workloads_map *create_workloads_map_va(int workers_count, int files_count, ...) {
+    char *files[files_count];
+
+    va_list file_list;
+
+    va_start(file_list, files_count);
+
+    for (int i = 0; i < files_count; i++) {
+        char *file_name = va_arg(file_list, char *);
+        files[i] = file_name;
+    }
+
+    va_end(file_list);
+
+    return create_workloads_map(workers_count, files_count, files);
+}
+
+
+workloads_map *create_workloads_map(int workers_count, int files_count, char **files) {
     workloads_map *map = malloc(sizeof(workloads_map *));
     map->workers_count = workers_count;
     map->lists = calloc(map->workers_count, sizeof(file_section_node *));
@@ -24,12 +42,8 @@ workloads_map *create_workloads_map(int workers_count, int files_count, ...) {
     file_info infos[files_count];
     struct stat stats;
 
-    va_list file_list;
-
-    va_start(file_list, files_count);
-
     for (int i = 0; i < files_count; i++) {
-        char *file_name = va_arg(file_list, char *);
+        char *file_name = files[i];
 
         if (strlen(file_name) > FILE_NAME_MAX_LENGTH) {
             printf("The file %s's name is too long.\n", file_name);
@@ -48,8 +62,6 @@ workloads_map *create_workloads_map(int workers_count, int files_count, ...) {
 
         total_size += stats.st_size;
     }
-
-    va_end(file_list);
 
     int section_size = total_size / map->workers_count;
     int remainder = total_size % map->workers_count;

@@ -27,7 +27,8 @@ typedef struct file_section_node {
 /*
  * Create a new workloads map for the specified number of workers and files and return its address to the caller.
  */
-workloads_map *create_workloads_map(int workers_count, int files_count, ...);
+workloads_map *create_workloads_map(int workers_count, int files_count, char **files);
+workloads_map *create_workloads_map_va(int workers_count, int files_count, ...);
 
 /*
  * Print the content of the specified map.
