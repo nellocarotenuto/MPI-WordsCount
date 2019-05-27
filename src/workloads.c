@@ -110,12 +110,11 @@ workloads_map *create_workloads_map(int workers_count, int files_count, char **f
 
 
 void print_workloads_map(workloads_map *map) {
+    char dashed_line[90];
+
     for (int i = 0; i < 90; i++) {
-        printf("-");
+        dashed_line[i] = '-';
     }
-
-    printf("\n");
-
     printf("The total size of the files to analyze is %d bytes.\n", map->total_size);
 
     int section_size = map->total_size / map->workers_count;
@@ -129,17 +128,9 @@ void print_workloads_map(workloads_map *map) {
                section_size);
     }
 
-    for (int i = 0; i < 90; i++) {
-        printf("-");
-    }
-
-    printf("\n%6s %-69s %6s %6s\n", "Worker", "File", "Start", "End");
-
-    for (int i = 0; i < 90; i++) {
-        printf("-");
-    }
-
-    printf("\n");
+    printf("%s\n", dashed_line);
+    printf("%6s %-69s %6s %6s\n", "Worker", "File", "Start", "End");
+    printf("%s\n", dashed_line);
 
     for (int i = 0; i < map->workers_count; i++) {
         file_section_node *section = map->lists[i];
@@ -150,11 +141,7 @@ void print_workloads_map(workloads_map *map) {
         }
     }
 
-    for (int i = 0; i < 90; i++) {
-        printf("-");
-    }
-
-    printf("\n\n");
+    printf("%s\n", dashed_line);
 }
 
 

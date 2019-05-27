@@ -77,36 +77,26 @@ void update_words_map_with_count(words_map *map, const char *word, int count) {
 
 
 void print_words_map(words_map *map) {
-    for (int i = 0; i < 90; i++) {
-        printf("-");
-    }
-
-    printf("\n");
-
-    printf("%4s %-73s %11s\n", "List", "Word", "Occurrences");
+    char dashed_line[90];
 
     for (int i = 0; i < 90; i++) {
-        printf("-");
+        dashed_line[i] = '-';
     }
 
-    printf("\n\n");
-
+    printf("%-78s %11s\n", "Word", "Occurrences");
+    printf("%s\n", dashed_line);
 
     for (int i = 0; i < NUMBER_OF_LISTS; i++) {
         word_node *item = map->lists[i];
 
         while (item) {
-            printf("%4d %-73s %11d\n", i, item->word, item->count);
+            printf("%-78s %11d\n", item->word, item->count);
             item = item->next;
         }
 
     }
 
-    for (int i = 0; i < 90; i++) {
-        printf("-");
-    }
-
-    printf("\n\n");
+    printf("%s\n", dashed_line);
 }
 
 
