@@ -7,11 +7,12 @@ project(MPI-WordsCount C)
 # Define C standard
 set(CMAKE_C_STANDARD 99)
 
-# Use Open MPI C wrapper compiler
-set(CMAKE_C_COMPILER mpicc)
-
 # Require external dependencies
 find_package(OpenSSL 1.1.1 REQUIRED)
+find_package(MPI REQUIRED)
+
+# Include MPI directories
+include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
 # Define libraries
 add_library(wordsmap STATIC src/wordsmap.c)
@@ -29,8 +30,11 @@ target_include_directories(mpiworkloads PUBLIC ${PROJECT_SOURCE_DIR}/include)
 add_library(mpiwordsmap STATIC src/mpiwordsmap.c)
 target_include_directories(mpiwordsmap PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
+add_library(logger STATIC src/logger.c)
+target_include_directories(logger PUBLIC ${PROJECT_SOURCE_DIR}/include)
+
 # Define the (only) executable of the project
 add_executable(${PROJECT_NAME} src/main.c)
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE wordsmap counter workloads mpiworkloads mpiwordsmap -lssl -lcrypto)
+target_link_libraries(${PROJECT_NAME} PRIVATE wordsmap counter workloads mpiworkloads mpiwordsmap logger -lssl -lcrypto ${MPI_C_LIBRARIES})
