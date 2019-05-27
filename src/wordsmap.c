@@ -20,15 +20,15 @@
 void digest_word(const unsigned char *word, size_t word_length, unsigned char **digest, unsigned int *digest_length);
 
 /*
- * Helper function that returns a pointer to the node in the list at the specified index of the map referring to the
+ * Helper function that returns a pointer to the word_node in the list at the specified index of the map referring to the
  * passed word, if exists, NULL otherwise.
  */
-node *lookup(const words_map *map, int list_index, const char *word);
+word_node *lookup(const words_map *map, int list_index, const char *word);
 
 
 words_map *create_words_map() {
     words_map *map = malloc(sizeof(words_map *));
-    map->lists = calloc(NUMBER_OF_LISTS, sizeof(node *));
+    map->lists = calloc(NUMBER_OF_LISTS, sizeof(word_node *));
     map->lists_length = calloc(NUMBER_OF_LISTS, sizeof(int));
 
     return map;
@@ -46,20 +46,24 @@ void update_words_map_with_count(words_map *map, const char *word, int count) {
 
     int length = strlen(word);
 
+    if (length > WORD_MAX_LENGTH) {
+        printf("The word %s is too long and can't be added to the map.\n", word);
+        exit(1);
+    }
+
     digest_word((unsigned char *) word, length, &digest, &digest_length);
 
     int index = digest[0] % NUMBER_OF_LISTS;
     free(digest);
 
-    node *item = lookup(map, index, word);
+    word_node *item = lookup(map, index, word);
 
     if (!item) {
-        item = calloc(1, sizeof(item));
+        item = calloc(1, sizeof(word_node));
 
         item->next = map->lists[index];
         map->lists[index] = item;
 
-        item->word = calloc(length + 1, sizeof(char));
         strcpy(item->word, word);
 
         item->count = count;
@@ -82,7 +86,7 @@ void print_words_map(words_map *map) {
 
 
     for (int i = 0; i < NUMBER_OF_LISTS; i++) {
-        node *item = map->lists[i];
+        word_node *item = map->lists[i];
 
         while (item) {
             printf("%4d %-103s %11d\n", i, item->word, item->count);
@@ -105,7 +109,7 @@ words_map *merge_words_maps(int maps_count, ...) {
         words_map *arg_map = va_arg(maps_list, words_map *);
 
         for (int j = 0; j < NUMBER_OF_LISTS; j++) {
-            node *item = arg_map->lists[j];
+            word_node *item = arg_map->lists[j];
 
             while (item) {
                 update_words_map_with_count(map, item->word, item->count);
@@ -127,7 +131,7 @@ words_map *merge_words_maps_array(int maps_count, words_map **maps) {
         words_map *arg_map = maps[i];
 
         for (int j = 0; j < NUMBER_OF_LISTS; j++) {
-            node *item = arg_map->lists[j];
+            word_node *item = arg_map->lists[j];
 
             while (item) {
                 update_words_map_with_count(map, item->word, item->count);
@@ -140,8 +144,8 @@ words_map *merge_words_maps_array(int maps_count, words_map **maps) {
 }
 
 
-node *lookup(const words_map *map, int list_index, const char *word) {
-    node *item = map->lists[list_index];
+word_node *lookup(const words_map *map, int list_index, const char *word) {
+    word_node *item = map->lists[list_index];
 
     if (!item) {
         return NULL;
@@ -161,13 +165,12 @@ node *lookup(const words_map *map, int list_index, const char *word) {
 
 void free_words_map(words_map *map) {
     for (int i = 0; i < NUMBER_OF_LISTS; i++) {
-        node *item = map->lists[i];
+        word_node *item = map->lists[i];
 
         while (item) {
-            node *temp = item;
+            word_node *temp = item;
             item = item->next;
 
-            free(temp->word);
             free(temp);
         }
     }

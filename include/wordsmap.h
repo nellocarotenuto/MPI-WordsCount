@@ -1,17 +1,19 @@
+#define WORD_MAX_LENGTH 64
+
 /*
  * Defines types to implement a simple hashmap with a variable number of buckets each of which contains a list of words
  * whose digest's first (unsigned) character modulo the number of buckets equals to bucket's index.
  */
 typedef struct words_map {
-    struct node **lists;
+    struct word_node **lists;
     int *lists_length;
 } words_map;
 
-typedef struct node {
-    char *word;
+typedef struct word_node {
+    char word[WORD_MAX_LENGTH];
     int count;
-    struct node *next;
-} node;
+    struct word_node *next;
+} word_node;
 
 /*
  *  Create a new words map and return its address to the caller.
