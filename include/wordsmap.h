@@ -8,6 +8,7 @@
 typedef struct words_map {
     struct word_node **lists;
     int *lists_length;
+    int total_count;
 } words_map;
 
 typedef struct word_node {

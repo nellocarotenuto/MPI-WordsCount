@@ -29,6 +29,7 @@ words_map *create_words_map() {
     words_map *map = malloc(sizeof(words_map *));
     map->lists = calloc(NUMBER_OF_LISTS, sizeof(word_node *));
     map->lists_length = calloc(NUMBER_OF_LISTS, sizeof(int));
+    map->total_count = 0;
 
     return map;
 }
@@ -71,6 +72,7 @@ void update_words_map_with_count(words_map *map, const char *word, int count) {
         item->count += count;
     }
 
+    map->total_count += count;
 }
 
 
