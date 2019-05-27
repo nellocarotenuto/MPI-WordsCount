@@ -12,6 +12,7 @@ typedef struct file_info {
  * Defines types to implement a map that allows to bind each file section to work on to a worker.
  */
 typedef struct workloads_map {
+    int total_size;
     int workers_count;
     int *lists_length;
     struct file_section_node **lists;

@@ -63,6 +63,8 @@ workloads_map *create_workloads_map(int workers_count, int files_count, char **f
         total_size += stats.st_size;
     }
 
+    map->total_size = total_size;
+
     int section_size = total_size / map->workers_count;
     int remainder = total_size % map->workers_count;
 
@@ -108,22 +110,51 @@ workloads_map *create_workloads_map(int workers_count, int files_count, char **f
 
 
 void print_workloads_map(workloads_map *map) {
-    printf("%6s %-101s %5s %5s\n", "Worker", "File", "Start", "End");
-
-    for (int i = 0; i < 120; i++) {
+    for (int i = 0; i < 90; i++) {
         printf("-");
     }
 
-    printf("\n\n");
+    printf("\n");
+
+    printf("The total size of the files to analyze is %d bytes.\n", map->total_size);
+
+    int section_size = map->total_size / map->workers_count;
+    int remainder = map->total_size % map->workers_count;
+
+    if (remainder == 0) {
+        printf("The work load will be divided among workers in equal chunks of %d bytes as follows.\n",
+                section_size);
+    } else {
+        printf("The work load will be divided among workers in chunks of ~%d bytes as follows.\n",
+               section_size);
+    }
+
+    for (int i = 0; i < 90; i++) {
+        printf("-");
+    }
+
+    printf("\n%6s %-69s %6s %6s\n", "Worker", "File", "Start", "End");
+
+    for (int i = 0; i < 90; i++) {
+        printf("-");
+    }
+
+    printf("\n");
 
     for (int i = 0; i < map->workers_count; i++) {
         file_section_node *section = map->lists[i];
 
         while (section) {
-            printf("%6d %-101s %5d %5d\n", i, section->file_name, section->start_index, section->end_index);
+            printf("%6d %-69s %6d %6d\n", i, section->file_name, section->start_index, section->end_index);
             section = section->next;
         }
     }
+
+    for (int i = 0; i < 90; i++) {
+        printf("-");
+    }
+
+    printf("\n\n");
 }
 
 
