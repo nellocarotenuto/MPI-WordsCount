@@ -20,11 +20,14 @@ target_include_directories(wordsmap PUBLIC ${PROJECT_SOURCE_DIR}/include)
 add_library(counter STATIC src/counter.c)
 target_include_directories(counter PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
-add_library(fileutils STATIC src/workloads.c)
-target_include_directories(fileutils PUBLIC ${PROJECT_SOURCE_DIR}/include)
+add_library(workloads STATIC src/workloads.c)
+target_include_directories(workloads PUBLIC ${PROJECT_SOURCE_DIR}/include)
+
+add_library(mpiworkloads STATIC src/mpiworkloads.c)
+target_include_directories(mpiworkloads PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 # Define the (only) executable of the project
 add_executable(${PROJECT_NAME} src/main.c)
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE wordsmap counter fileutils -lssl -lcrypto)
+target_link_libraries(${PROJECT_NAME} PRIVATE wordsmap counter workloads mpiworkloads -lssl -lcrypto)
