@@ -9,7 +9,6 @@
 #include "wordsmap.h"
 
 
-#define NUMBER_OF_LISTS 256
 #define HASH_ALGORITHM EVP_sha1()
 #define DIGEST_LENGTH 20
 
@@ -76,9 +75,15 @@ void update_words_map_with_count(words_map *map, const char *word, int count) {
 
 
 void print_words_map(words_map *map) {
-    printf("%4s %-103s %11s\n", "List", "Word", "Occurrences");
+    for (int i = 0; i < 90; i++) {
+        printf("-");
+    }
 
-    for (int i = 0; i < 120; i++) {
+    printf("\n");
+
+    printf("%4s %-73s %11s\n", "List", "Word", "Occurrences");
+
+    for (int i = 0; i < 90; i++) {
         printf("-");
     }
 
@@ -89,12 +94,17 @@ void print_words_map(words_map *map) {
         word_node *item = map->lists[i];
 
         while (item) {
-            printf("%4d %-103s %11d\n", i, item->word, item->count);
+            printf("%4d %-73s %11d\n", i, item->word, item->count);
             item = item->next;
         }
 
     }
 
+    for (int i = 0; i < 90; i++) {
+        printf("-");
+    }
+
+    printf("\n\n");
 }
 
 
