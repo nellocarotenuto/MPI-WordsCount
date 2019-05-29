@@ -4,6 +4,7 @@
 #include <wordsmap.h>
 #include <workloads.h>
 #include <mpi.h>
+#include <fileloader.h>
 
 #include "counter.h"
 #include "logger.h"
@@ -34,6 +35,9 @@ int main(int argc, char *argv[]) {
     MPI_Datatype type_word;
     create_type_word(&type_word);
 
+    MPI_Request file_list_length_request;
+    MPI_Request words_list_length_request;
+
     workloads_map *loads_map;
     words_map *words_map;
 
@@ -42,36 +46,58 @@ int main(int argc, char *argv[]) {
 
     char *log_file_name;
 
-    if (argc <= 1) {
-        printf("Usage: mpirun -np %d ./MPI-WordsCount <filenames>\n", size);
-        exit(1);
-    }
-
     if (rank == MASTER) {
-        int files_count = argc -1;
-        char *files[files_count];
-
-        for (int i = 1; i < argc; i++) {
-            files[i - 1] = argv[i];
+        if (argc < 3) {
+            printf("Possible usages:\n"
+                   "\tmpirun -np <processors> ./MPI-WordsCount -f <filenames>\n"
+                   "\tmpirun -np <processors> ./MPI-WordsCount -d <dirname>\n"
+                   "\tmpirun -np <processors> ./MPI-WordsCount -mf <masterfile>\n");
+            exit(1);
         }
 
-        loads_map = create_workloads_map(size, files_count, files);
+        input_files *input;
 
-        for (int i = 0; i < size; i++) {
+        if (!strcmp(argv[1], "-f")) {
+            input = calloc(1, sizeof(input_files));
+            input->files_count = argc - 2;
+
+            for (int i = 2; i < argc; i++) {
+                input->file_names[i - 2] = argv[i];
+            }
+        } else if (!strcmp(argv[1], "-d")) {
+            input = load_files_from_directory("../data/");
+        } else if (!strcmp(argv[1], "-mf")) {
+            input = load_files_from_master_file("../data/0");
+        }
+
+        loads_map = create_workloads_map(size, input->files_count, input->file_names);
+        print_workloads_map(loads_map);
+
+        for (int i = 0; i < input->files_count; i++) {
+            free(input->file_names[i]);
+        }
+
+        free(input);
+
+        file_sections_list_length = loads_map->lists_length[MASTER];
+        file_sections_list = create_file_section_list_buffer(file_sections_list_length, loads_map->lists[MASTER]);
+
+        for (int i = 1; i < size; i++) {
             int list_length = loads_map->lists_length[i];
             file_section_node *buffer = create_file_section_list_buffer(list_length, loads_map->lists[i]);
 
-            MPI_Send(&list_length, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+            MPI_Isend(&list_length, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &file_list_length_request);
             MPI_Send(buffer, list_length, type_file_section, i, 0, MPI_COMM_WORLD);
 
             free(buffer);
         }
+
+    } else {
+        MPI_Recv(&file_sections_list_length, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        file_sections_list = calloc(file_sections_list_length, sizeof(file_section_node));
+        MPI_Recv(file_sections_list, file_sections_list_length, type_file_section, MASTER, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
-
-    MPI_Recv(&file_sections_list_length, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-    file_sections_list = calloc(file_sections_list_length, sizeof(file_section_node));
-    MPI_Recv(file_sections_list, file_sections_list_length, type_file_section, MASTER, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     words_map = create_words_map();
 
@@ -79,25 +105,9 @@ int main(int argc, char *argv[]) {
         count_words(file_sections_list[i].file_name, words_map, file_sections_list[i].start_index, file_sections_list[i].end_index);
     }
 
-    for (int i = 0; i < NUMBER_OF_LISTS; i++) {
-        int list_length = words_map->lists_length[i];
-        MPI_Send(&list_length, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD);
-
-        if (list_length > 0) {
-            word_node *buffer = create_word_list_buffer(list_length, words_map->lists[i]);
-
-            MPI_Send(buffer, list_length, type_word, MASTER, 0, MPI_COMM_WORLD);
-            free(buffer);
-        }
-    }
-
-    free_words_map(words_map);
-
     if (rank == MASTER) {
-        words_map = create_words_map();
-
         for (int i = 0; i < NUMBER_OF_LISTS; i++) {
-            for (int j = 0; j < size; j++) {
+            for (int j = 1; j < size; j++) {
                 MPI_Recv(&words_list_length[j], 1, MPI_INT, j, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
                 if (words_list_length[j] > 0) {
@@ -112,6 +122,23 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
+    } else {
+        for (int i = 0; i < NUMBER_OF_LISTS; i++) {
+            int list_length = words_map->lists_length[i];
+            MPI_Isend(&list_length, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD, &words_list_length_request);
+
+            if (list_length > 0) {
+                word_node *buffer = create_word_list_buffer(list_length, words_map->lists[i]);
+
+                MPI_Send(buffer, list_length, type_word, MASTER, 0, MPI_COMM_WORLD);
+
+                free(buffer);
+            }
+
+            MPI_Wait(&words_list_length_request, MPI_STATUS_IGNORE);
+        }
+
+        free_words_map(words_map);
     }
 
     execution_times[rank] = MPI_Wtime() - starting_time;
@@ -120,7 +147,15 @@ int main(int argc, char *argv[]) {
     if (rank == MASTER) {
         print_words_map(words_map);
         log_file_name = log_execution_info(loads_map, words_map, execution_times);
-        printf("Full report available at the following file: \"%s\".\n", log_file_name);
+
+        double max_execution_time = execution_times[0];
+
+        for (int i = 1; i < size; i++) {
+            if (execution_times[i] > max_execution_time)
+                max_execution_time = execution_times[i];
+        }
+
+        printf("Execution time: %fs.\nFull report available at \"%s\".\n", max_execution_time, log_file_name);
 
         free_words_map(words_map);
         free_workloads_map(loads_map);
