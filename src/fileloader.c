@@ -75,7 +75,7 @@ input_files *load_files_from_master_file(char *index_file_name) {
     while (getline(&line, &line_length, index_file) != -1) {
         int line_index = 0;
 
-        while (line[line_index] != '\n') {
+        while (line[line_index] != '\n' && line[line_index] != '\0') {
             line_index++;
         }
 
@@ -83,7 +83,7 @@ input_files *load_files_from_master_file(char *index_file_name) {
 
         if (line_index > 0) {
             if (line_index >= FILE_NAME_MAX_LENGTH) {
-                printf("The following file's name is too long: %s.\n", line);
+                printf("The name of the following file is too long: %s.\n", line);
                 exit(1);
             }
 
