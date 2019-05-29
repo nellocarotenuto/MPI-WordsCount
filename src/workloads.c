@@ -129,14 +129,14 @@ void print_workloads_map(workloads_map *map) {
     }
 
     printf("%s\n", dashed_line);
-    printf("%6s %-69s %6s %6s\n", "Worker", "File", "Start", "End");
+    printf("%2s %-65s %10s %10s\n", "#W", "File", "Start", "End");
     printf("%s\n", dashed_line);
 
     for (int i = 0; i < map->workers_count; i++) {
         file_section_node *section = map->lists[i];
 
         while (section) {
-            printf("%6d %-69s %6d %6d\n", i, section->file_name, section->start_index, section->end_index);
+            printf("%2d %-65s %10d %10d\n", i, section->file_name, section->start_index, section->end_index);
             section = section->next;
         }
     }

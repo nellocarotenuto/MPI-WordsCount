@@ -62,14 +62,14 @@ char *log_execution_info(workloads_map *loads_map, words_map *words_map, double 
 
     fprintf(log_file, "%s\n", "Workload distribution");
     fprintf(log_file, "%s\n", dashed_line);
-    fprintf(log_file, "%6s %-99s %6s %6s\n", "Worker", "File", "Start", "End");
+    fprintf(log_file, "%6s %-95s %8s %8s\n", "Worker", "File", "Start", "End");
     fprintf(log_file, "%s\n", dashed_line);
 
     for (int i = 0; i < loads_map->workers_count; i++) {
         file_section_node *section = loads_map->lists[i];
 
         while (section) {
-            fprintf(log_file, "%6d %-99s %6d %6d\n", i, section->file_name, section->start_index, section->end_index);
+            fprintf(log_file, "%6d %-95s %8d %8d\n", i, section->file_name, section->start_index, section->end_index);
             section = section->next;
         }
     }
@@ -85,7 +85,7 @@ char *log_execution_info(workloads_map *loads_map, words_map *words_map, double 
         word_node *item = words_map->lists[i];
 
         while (item) {
-            fprintf(log_file, "%-108s %11d\n", item->word, item->count);
+            fprintf(log_file, "%-108s %11ld\n", item->word, item->count);
             item = item->next;
         }
 
