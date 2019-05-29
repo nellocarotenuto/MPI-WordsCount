@@ -41,12 +41,19 @@ void update_words_map(words_map *map, const char *word) {
 
 
 void update_words_map_with_count(words_map *map, const char *word, int count) {
-    unsigned int digest_length = DIGEST_LENGTH;
-    unsigned char *digest = calloc(digest_length, sizeof(unsigned char));
+    unsigned int digest_length;
+    unsigned char *digest;
 
     int length = strlen(word);
 
-    if (length > WORD_MAX_LENGTH) {
+    if (length == 0) {
+        return;
+    }
+
+    digest_length = DIGEST_LENGTH;
+    digest = calloc(digest_length, sizeof(unsigned char));
+
+    if (length >= WORD_MAX_LENGTH) {
         printf("The word %s is too long and can't be added to the map.\n", word);
         exit(1);
     }
@@ -90,7 +97,7 @@ void print_words_map(words_map *map) {
         word_node *item = map->lists[i];
 
         while (item) {
-            printf("%-78s %11d\n", item->word, item->count);
+            printf("%-78s %11ld\n", item->word, item->count);
             item = item->next;
         }
 
