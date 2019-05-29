@@ -65,9 +65,9 @@ int main(int argc, char *argv[]) {
                 input->file_names[i - 2] = argv[i];
             }
         } else if (!strcmp(argv[1], "-d")) {
-            input = load_files_from_directory("../data/");
+            input = load_files_from_directory(argv[2]);
         } else if (!strcmp(argv[1], "-mf")) {
-            input = load_files_from_master_file("../data/0");
+            input = load_files_from_master_file(argv[2]);
         }
 
         loads_map = create_workloads_map(size, input->files_count, input->file_names);
