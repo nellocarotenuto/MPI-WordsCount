@@ -62,7 +62,8 @@ int main(int argc, char *argv[]) {
             input->files_count = argc - 2;
 
             for (int i = 2; i < argc; i++) {
-                input->file_names[i - 2] = argv[i];
+                input->file_names[i - 2] = calloc(strlen(argv[i]) + 1, sizeof(char));
+                strcpy(input->file_names[i - 2], argv[i]);
             }
         } else if (!strcmp(argv[1], "-d")) {
             input = load_files_from_directory(argv[2]);
