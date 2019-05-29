@@ -33,8 +33,11 @@ target_include_directories(mpiwordsmap PUBLIC ${PROJECT_SOURCE_DIR}/include)
 add_library(logger STATIC src/logger.c)
 target_include_directories(logger PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
+add_library(fileloader STATIC src/fileloader.c)
+target_include_directories(fileloader PUBLIC ${PROJECT_SOURCE_DIR}/include)
+
 # Define the (only) executable of the project
 add_executable(${PROJECT_NAME} src/main.c)
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE wordsmap counter workloads mpiworkloads mpiwordsmap logger -lssl -lcrypto ${MPI_C_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE wordsmap counter workloads mpiworkloads mpiwordsmap logger fileloader -lssl -lcrypto ${MPI_C_LIBRARIES})
