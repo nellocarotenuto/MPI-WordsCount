@@ -110,7 +110,7 @@ workloads_map *create_workloads_map(int workers_count, int files_count, char **f
 
 
 void print_workloads_map(workloads_map *map) {
-    char dashed_line[90];
+    char dashed_line[91] = {0};
 
     for (int i = 0; i < 90; i++) {
         dashed_line[i] = '-';

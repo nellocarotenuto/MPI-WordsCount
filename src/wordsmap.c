@@ -84,7 +84,7 @@ void update_words_map_with_count(words_map *map, const char *word, int count) {
 
 
 void print_words_map(words_map *map) {
-    char dashed_line[90];
+    char dashed_line[91] = {0};
 
     for (int i = 0; i < 90; i++) {
         dashed_line[i] = '-';
