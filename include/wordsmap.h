@@ -13,7 +13,7 @@ typedef struct words_map {
 
 typedef struct word_node {
     char word[WORD_MAX_LENGTH];
-    long count;
+    int count;
     struct word_node *next;
 } word_node;
 
