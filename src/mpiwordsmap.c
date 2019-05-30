@@ -22,7 +22,7 @@ void create_type_word(MPI_Datatype *word) {
     block_displacements[0] -= starting_address;
 
     block_lengths[1] = 1;
-    block_types[1] = MPI_LONG;
+    block_types[1] = MPI_INT;
     MPI_Get_address(&node.count, &block_displacements[1]);
     block_displacements[1] -= starting_address;
 

@@ -97,7 +97,7 @@ void print_words_map(words_map *map) {
         word_node *item = map->lists[i];
 
         while (item) {
-            printf("%-78s %11ld\n", item->word, item->count);
+            printf("%-78s %11d\n", item->word, item->count);
             item = item->next;
         }
 

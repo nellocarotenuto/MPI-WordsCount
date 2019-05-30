@@ -85,7 +85,7 @@ char *log_execution_info(workloads_map *loads_map, words_map *words_map, double 
         word_node *item = words_map->lists[i];
 
         while (item) {
-            fprintf(log_file, "%-108s %11ld\n", item->word, item->count);
+            fprintf(log_file, "%-108s %11d\n", item->word, item->count);
             item = item->next;
         }
 
