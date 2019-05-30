@@ -55,6 +55,7 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
 
+        // Fill the input files list
         input_files *input;
 
         if (!strcmp(argv[1], "-f")) {
@@ -71,6 +72,7 @@ int main(int argc, char *argv[]) {
             input = load_files_from_master_file(argv[2]);
         }
 
+        // Create a workloads map to determine who ha to do what and send the information to each worker
         loads_map = create_workloads_map(size, input->files_count, input->file_names);
         print_workloads_map(loads_map);
 
@@ -92,14 +94,15 @@ int main(int argc, char *argv[]) {
 
             free(buffer);
         }
-
     } else {
+        // Receive the info about file sections to work on
         MPI_Recv(&file_sections_list_length, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         file_sections_list = calloc(file_sections_list_length, sizeof(file_section_node));
         MPI_Recv(file_sections_list, file_sections_list_length, type_file_section, MASTER, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
 
+    // Create a words map and count the words in each file section assigned
     words_map = create_words_map();
 
     for (int i = 0; i < file_sections_list_length; i++) {
@@ -107,6 +110,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (rank == MASTER) {
+        // Receive the lists of the wordsmap from each worker
         for (int i = 0; i < NUMBER_OF_LISTS; i++) {
             for (int j = 1; j < size; j++) {
                 MPI_Recv(&words_list_length[j], 1, MPI_INT, j, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -124,6 +128,7 @@ int main(int argc, char *argv[]) {
             }
         }
     } else {
+        // Send the lists of the hashmap
         for (int i = 0; i < NUMBER_OF_LISTS; i++) {
             int list_length = words_map->lists_length[i];
             MPI_Isend(&list_length, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD, &words_list_length_request);
@@ -142,10 +147,12 @@ int main(int argc, char *argv[]) {
         free_words_map(words_map);
     }
 
+    // Compute the total execution times
     execution_times[rank] = MPI_Wtime() - starting_time;
     MPI_Gather(&execution_times[rank], 1, MPI_DOUBLE, &execution_times, 1, MPI_DOUBLE, MASTER, MPI_COMM_WORLD);
 
     if (rank == MASTER) {
+        // Output the results to console and write a log
         print_words_map(words_map);
         log_file_name = log_execution_info(loads_map, words_map, execution_times);
 
