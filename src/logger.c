@@ -24,7 +24,7 @@ char *log_execution_info(workloads_map *loads_map, words_map *words_map, double 
     time_t timestamp = time(NULL);
     struct tm tm = *localtime(&timestamp);
     char date[20];
-    sprintf(date, "%d-%d-%d %d:%d:%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    sprintf(date, "%d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 
     char *file_name = calloc(64, sizeof(char));
     sprintf(file_name, "%s/%s -np %d", LOGS_DIR, date, loads_map->workers_count);
