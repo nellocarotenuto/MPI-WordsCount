@@ -70,6 +70,9 @@ int main(int argc, char *argv[]) {
             input = load_files_from_directory(argv[2]);
         } else if (!strcmp(argv[1], "-mf")) {
             input = load_files_from_master_file(argv[2]);
+        } else {
+            printf("Unknown option \"%s\".\n", argv[1]);
+            exit(1);
         }
 
         // Create a workloads map to determine who ha to do what and send the information to each worker
@@ -109,48 +112,54 @@ int main(int argc, char *argv[]) {
         count_words(file_sections_list[i].file_name, words_map, file_sections_list[i].start_index, file_sections_list[i].end_index);
     }
 
-    if (rank == MASTER) {
-        // Receive the lists of the wordsmap from each worker
-        for (int i = 0; i < NUMBER_OF_LISTS; i++) {
-            for (int j = 1; j < size; j++) {
-                MPI_Recv(&words_list_length[j], 1, MPI_INT, j, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    if (size > 1) {
+        if (rank == MASTER) {
+            // Receive the lists of the wordsmap from each worker
+            for (int i = 0; i < NUMBER_OF_LISTS; i++) {
+                for (int j = 1; j < size; j++) {
+                    MPI_Recv(&words_list_length[j], 1, MPI_INT, j, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-                if (words_list_length[j] > 0) {
-                    words_list[j] = calloc(words_list_length[j], sizeof(word_node));
-                    MPI_Recv(words_list[j], words_list_length[j], type_word, j, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                    if (words_list_length[j] > 0) {
+                        words_list[j] = calloc(words_list_length[j], sizeof(word_node));
+                        MPI_Recv(words_list[j], words_list_length[j], type_word, j, 0, MPI_COMM_WORLD,
+                                 MPI_STATUS_IGNORE);
 
-                    for (int k = 0; k < words_list_length[j]; k++) {
-                        update_words_map_with_count(words_map, words_list[j][k].word, words_list[j][k].count);
+                        for (int k = 0; k < words_list_length[j]; k++) {
+                            update_words_map_with_count(words_map, words_list[j][k].word, words_list[j][k].count);
+                        }
+
+                        free(words_list[j]);
                     }
-
-                    free(words_list[j]);
                 }
             }
-        }
-    } else {
-        // Send the lists of the hashmap
-        for (int i = 0; i < NUMBER_OF_LISTS; i++) {
-            int list_length = words_map->lists_length[i];
-            MPI_Isend(&list_length, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD, &words_list_length_request);
+        } else {
+            // Send the lists of the hashmap
+            for (int i = 0; i < NUMBER_OF_LISTS; i++) {
+                int list_length = words_map->lists_length[i];
+                MPI_Isend(&list_length, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD, &words_list_length_request);
 
-            if (list_length > 0) {
-                word_node *buffer = create_word_list_buffer(list_length, words_map->lists[i]);
+                if (list_length > 0) {
+                    word_node *buffer = create_word_list_buffer(list_length, words_map->lists[i]);
 
-                MPI_Send(buffer, list_length, type_word, MASTER, 0, MPI_COMM_WORLD);
+                    MPI_Send(buffer, list_length, type_word, MASTER, 0, MPI_COMM_WORLD);
 
-                free(buffer);
+                    free(buffer);
+                }
+
+                MPI_Wait(&words_list_length_request, MPI_STATUS_IGNORE);
             }
 
-            MPI_Wait(&words_list_length_request, MPI_STATUS_IGNORE);
+            free_words_map(words_map);
         }
-
-        free_words_map(words_map);
     }
 
     // Compute the total execution times
     execution_times[rank] = MPI_Wtime() - starting_time;
-    MPI_Gather(&execution_times[rank], 1, MPI_DOUBLE, &execution_times, 1, MPI_DOUBLE, MASTER, MPI_COMM_WORLD);
 
+    if (size > 1) {
+        MPI_Gather(&execution_times[rank], 1, MPI_DOUBLE, &execution_times, 1, MPI_DOUBLE, MASTER, MPI_COMM_WORLD);
+    }
+    
     if (rank == MASTER) {
         // Output the results to console and write a log
         print_words_map(words_map);
