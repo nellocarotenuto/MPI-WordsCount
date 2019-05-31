@@ -3,8 +3,8 @@
 # This script automates the execution of MPI-WordsCount with an increasing number of processors from 1 up to the value
 # passed as --maxnp argument.
 
-EXECUTABLE="MPI-WordsCount"
-REPORTS="reports/"
+EXECUTABLE="../MPI-WordsCount"
+REPORTS="../reports/"
 
 if [ $# -lt 5 ]
 then
@@ -33,7 +33,7 @@ then
         for i in $(seq 1 $MAXNP)
         do
             echo "Testing with $i processes ... "
-            mpirun -np "$i" ./"$EXECUTABLE" "$4" "$5" | tail -2
+            mpirun -np "$i" "$EXECUTABLE" "$4" "$5" | tail -2
             echo
         done
     else

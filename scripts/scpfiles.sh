@@ -14,7 +14,7 @@ then
 fi
 
 EXECUTABLE="MPI-WordsCount"
-DATADIR="data/"
+DATADIR="../data/"
 
 USER="ubuntu"
 
