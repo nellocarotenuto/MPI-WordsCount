@@ -1,5 +1,5 @@
 # Set minimum required version for CMake
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.5)
 
 # Define the project name - It will be used for the executable as well
 project(MPI-WordsCount C)
@@ -8,7 +8,7 @@ project(MPI-WordsCount C)
 set(CMAKE_C_STANDARD 99)
 
 # Require external dependencies
-find_package(OpenSSL 1.1.1 REQUIRED)
+find_package(OpenSSL 1.0.2 REQUIRED)
 find_package(MPI REQUIRED)
 
 # Include MPI directories
