@@ -14,7 +14,7 @@ then
 fi
 
 EXECUTABLE="MPI-WordsCount"
-DATADIR="../data/"
+DATADIR="data/"
 
 USER="ubuntu"
 
@@ -30,6 +30,7 @@ then
 		if [ "$ADDRESS" != "localhost" ] && [ "$ADDRESS" != "127.0.0.1" ]
 		then
 			echo "Copying files to $ADDRESS ..."
+			ssh -o StrictHostKeyChecking=no "$USER"@"$ADDRESS" "mkdir -p $PWD"
 			scp -r "$EXECUTABLE" "$DATADIR" "$USER"@"$ADDRESS":"$PWD"
 			echo
 		fi
