@@ -47,6 +47,7 @@ char *log_execution_info(workloads_map *loads_map, words_map *words_map, double 
 
     fprintf(log_file, "%-100s%20s\n", "Date of the test", date);
     fprintf(log_file, "%-100s%20d\n", "Number of workers", loads_map->workers_count);
+    fprintf(log_file, "%-100s%20d\n", "Number of lists in the hash table", NUMBER_OF_LISTS);
     fprintf(log_file, "%-100s%20d\n", "Number of words", words_map->total_count);
     fprintf(log_file, "%-100s%20d\n", "Number of bytes", loads_map->total_size);
     fprintf(log_file, "%s\n\n", dashed_line);
