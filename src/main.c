@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
                                  MPI_STATUS_IGNORE);
 
                         for (int k = 0; k < words_list_length[j]; k++) {
-                            update_words_map_with_count(words_map, words_list[j][k].word, words_list[j][k].count);
+                            update_list(words_map, i, words_list[j][k].word, words_list[j][k].count);
                         }
 
                         free(words_list[j]);
@@ -151,6 +151,7 @@ int main(int argc, char *argv[]) {
 
             free_words_map(words_map);
         }
+
     }
 
     // Compute the total execution times

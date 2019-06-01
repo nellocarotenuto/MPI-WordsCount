@@ -1,4 +1,4 @@
-#define NUMBER_OF_LISTS 256
+#define NUMBER_OF_LISTS 128
 #define WORD_MAX_LENGTH 64
 
 /*
@@ -33,6 +33,13 @@ void update_words_map(words_map *map, const char *word);
  * occurrences to the map if it does not already exist in the latter or updates its count otherwise.
  */
 void update_words_map_with_count(words_map *map, const char *word, int count);
+
+/*
+ * Update the given list of the map passed as argument with the word its relative count.
+ * Notice that you MUST be sure the word belongs to the given list to avoid ending up with multiple counters for the
+ * same word.
+ */
+void update_list(words_map *map, int list, const char *word, int count);
 
 /*
  * Print the content of the specified map.

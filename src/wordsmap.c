@@ -60,26 +60,31 @@ void update_words_map_with_count(words_map *map, const char *word, int count) {
 
     digest_word((unsigned char *) word, length, &digest, &digest_length);
 
-    int index = digest[0] % NUMBER_OF_LISTS;
+    int list = digest[0] % NUMBER_OF_LISTS;
     free(digest);
 
-    word_node *item = lookup(map, index, word);
+    update_list(map, list, word, count);
+
+    map->total_count += count;
+}
+
+
+void update_list(words_map *map, int list, const char *word, int count) {
+    word_node *item = lookup(map, list, word);
 
     if (!item) {
         item = calloc(1, sizeof(word_node));
 
-        item->next = map->lists[index];
-        map->lists[index] = item;
+        item->next = map->lists[list];
+        map->lists[list] = item;
 
         strcpy(item->word, word);
 
         item->count = count;
-        map->lists_length[index]++;
+        map->lists_length[list]++;
     } else {
         item->count += count;
     }
-
-    map->total_count += count;
 }
 
 
