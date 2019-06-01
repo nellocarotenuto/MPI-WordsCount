@@ -11,9 +11,9 @@ REPORTS="reports/"
 if [[ $# -lt 5 ]]
 then
     echo "Usages:"
-    echo "\t$0 $EXECUTABLE --maxnp <value> -f <filenames>"
-    echo "\t$0 $EXECUTABLE --maxnp <value> -d <dirname>"
-    echo "\t$0 $EXECUTABLE --maxnp <value> -mf <masterfile>"
+    echo -e "\t$0 $EXECUTABLE --maxnp <value> -f <filenames>"
+    echo -e "\t$0 $EXECUTABLE --maxnp <value> -d <dirname>"
+    echo -e "\t$0 $EXECUTABLE --maxnp <value> -mf <masterfile>"
 fi
 
 if [[ $2 = "--maxnp" ]]
