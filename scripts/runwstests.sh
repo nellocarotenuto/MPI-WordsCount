@@ -8,20 +8,21 @@
 EXECUTABLE="MPI-WordsCount"
 REPORTS="reports/"
 
-if [[ $# -lt 5 ]]
+if [[ $# -lt 7 ]]
 then
     echo "Usage:"
-    echo -e "\t$0 $EXECUTABLE --maxnp <value> -f <filenames>"
+    echo -e "\t$0 $EXECUTABLE --maxnp <value> --hostfile <hostfile> -f <filenames>"
     exit
 fi
 
-if [[ $2 = "--maxnp" ]]
+if [[ $2 = "--maxnp" ]] && [[ $4 = "--hostfile" ]]
 then
     MAXNP=$3
+    HOSTFILE=$5
 
-    if [[ $4 = "-f" ]]
+    if [[ $6 = "-f" ]]
     then
-        shift 4
+        shift 6
         FILES=("${@}")
 
         for (( i=1; i<=$MAXNP; i++ ))
@@ -32,14 +33,17 @@ then
             done
 
             echo "Testing with $i processes ... "
-            mpirun -np "$i" "$EXECUTABLE" -f "${ARGUMENTS[@]}" | tail -2
+            mpirun -np "$i" --hostfile "$HOSTFILE" "$EXECUTABLE" -f "${ARGUMENTS[@]}" | tail -2
             echo
 
             unset ARGUMENTS
         done
+    else
+        echo "Unknown $EXECUTABLE option \""$6"\""
+        exit
     fi
 else
-    echo "Unknown option \""$2"\""
+    echo "Unknown options \""$2"\" "$4"\"."
     exit
 fi
 

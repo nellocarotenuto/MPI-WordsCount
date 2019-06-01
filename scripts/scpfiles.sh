@@ -27,7 +27,7 @@ if [[ "$1" = "--hostfile" ]]
 then
 	while IFS=' ' read -r ADDRESS slots
 	do
-		if [[ "$ADDRESS" != "localhost" ]] && [[ "$ADDRESS" != "127.0.0.1" ]]
+		if [[ "$ADDRESS" != "MASTER" ]]
 		then
 			echo "Copying files to $ADDRESS ..."
 			ssh -o StrictHostKeyChecking=no "$USER"@"$ADDRESS" "mkdir -p $PWD"

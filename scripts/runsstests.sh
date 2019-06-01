@@ -8,42 +8,43 @@
 EXECUTABLE="MPI-WordsCount"
 REPORTS="reports/"
 
-if [[ $# -lt 5 ]]
+if [[ $# -lt 7 ]]
 then
     echo "Usages:"
-    echo -e "\t$0 $EXECUTABLE --maxnp <value> -f <filenames>"
-    echo -e "\t$0 $EXECUTABLE --maxnp <value> -d <dirname>"
-    echo -e "\t$0 $EXECUTABLE --maxnp <value> -mf <masterfile>"
+    echo -e "\t$0 $EXECUTABLE --maxnp <value> --hostfile <hostfile> -f <filenames>"
+    echo -e "\t$0 $EXECUTABLE --maxnp <value> --hostfile <hostfile> -d <dirname>"
+    echo -e "\t$0 $EXECUTABLE --maxnp <value> --hostfile <hostfile> -mf <masterfile>"
 fi
 
-if [[ $2 = "--maxnp" ]]
+if [[ $2 = "--maxnp" ]] && [[ $4 = "--hostfile" ]]
 then
     MAXNP=$3
+    HOSTFILE=$5
 
-    if [[ $4 = "-f" ]]
+    if [[ $6 = "-f" ]]
     then
-        shift 4
+        shift 6
 
         for (( i=1; i<=$MAXNP; i++ ))
         do
             echo "Testing with $i processes ... "
-            mpirun -np "$i" "$EXECUTABLE" -f "${@}" | tail -2
+            mpirun -np "$i" --hostfile "$HOSTFILE" "$EXECUTABLE" -f "${@}" | tail -2
             echo
         done
-    elif [[ $4 = "-d" ]] || [[ $4 = "-mf" ]]
+    elif [[ $6 = "-d" ]] || [[ $6 = "-mf" ]]
     then
         for (( i=1; i<=$MAXNP; i++ ))
         do
             echo "Testing with $i processes ... "
-            mpirun -np "$i" "$EXECUTABLE" "$4" "$5" | tail -2
+            mpirun -np "$i" --hostfile "$HOSTFILE" "$EXECUTABLE" "$6" "$7" | tail -2
             echo
         done
     else
-        echo "Unknown $EXECUTABLE option \""$4"\""
+        echo "Unknown $EXECUTABLE option \""$6"\""
         exit
     fi
 else
-    echo "Unknown option \""$2"\""
+    echo "Unknown options \""$2"\" "$4"\"."
     exit
 fi
 
