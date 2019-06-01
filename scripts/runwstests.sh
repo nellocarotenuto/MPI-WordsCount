@@ -8,10 +8,10 @@
 EXECUTABLE="MPI-WordsCount"
 REPORTS="reports/"
 
-if [[ $# -ne 5 ]]
+if [[ $# -lt 5 ]]
 then
     echo "Usage:"
-    echo -e "\t$0 $EXECUTABLE --maxnp <value> -f <filename>"
+    echo -e "\t$0 $EXECUTABLE --maxnp <value> -f <filenames>"
     exit
 fi
 
@@ -21,11 +21,14 @@ then
 
     if [[ $4 = "-f" ]]
     then
+        shift 4
+        FILES=("${@}")
+
         for (( i=1; i<=$MAXNP; i++ ))
         do
             for (( j=0; j<$i; j++ ))
             do
-                ARGUMENTS+=("$5")
+                ARGUMENTS+=("${FILES[@]}")
             done
 
             echo "Testing with $i processes ... "
