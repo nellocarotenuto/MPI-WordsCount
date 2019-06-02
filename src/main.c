@@ -23,8 +23,7 @@ int main(int argc, char *argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    int file_sections_list_length;
-    file_section_node *file_sections_list;
+    file_section_node *file_section_node;
 
     int words_list_length[size];
     word_node *words_list[size];
@@ -35,7 +34,6 @@ int main(int argc, char *argv[]) {
     MPI_Datatype type_word;
     create_type_word(&type_word);
 
-    MPI_Request file_list_length_request;
     MPI_Request words_list_length_request;
 
     workloads_map *loads_map;
@@ -46,70 +44,59 @@ int main(int argc, char *argv[]) {
 
     char *log_file_name;
 
-    if (rank == MASTER) {
-        if (argc < 3) {
-            printf("Possible usages:\n"
-                   "\tmpirun -np <processors> ./MPI-WordsCount -f <filenames>\n"
-                   "\tmpirun -np <processors> ./MPI-WordsCount -d <dirname>\n"
-                   "\tmpirun -np <processors> ./MPI-WordsCount -mf <masterfile>\n");
-            exit(1);
-        }
-
-        // Fill the input files list
-        input_files *input;
-
-        if (!strcmp(argv[1], "-f")) {
-            input = calloc(1, sizeof(input_files));
-            input->files_count = argc - 2;
-
-            for (int i = 2; i < argc; i++) {
-                input->file_names[i - 2] = calloc(strlen(argv[i]) + 1, sizeof(char));
-                strcpy(input->file_names[i - 2], argv[i]);
-            }
-        } else if (!strcmp(argv[1], "-d")) {
-            input = load_files_from_directory(argv[2]);
-        } else if (!strcmp(argv[1], "-mf")) {
-            input = load_files_from_master_file(argv[2]);
-        } else {
-            printf("Unknown option \"%s\".\n", argv[1]);
-            exit(1);
-        }
-
-        // Create a workloads map to determine who ha to do what and send the information to each worker
-        loads_map = create_workloads_map(size, input->files_count, input->file_names);
-        print_workloads_map(loads_map);
-
-        for (int i = 0; i < input->files_count; i++) {
-            free(input->file_names[i]);
-        }
-
-        free(input);
-
-        file_sections_list_length = loads_map->lists_length[MASTER];
-        file_sections_list = create_file_section_list_buffer(file_sections_list_length, loads_map->lists[MASTER]);
-
-        for (int i = 1; i < size; i++) {
-            int list_length = loads_map->lists_length[i];
-            file_section_node *buffer = create_file_section_list_buffer(list_length, loads_map->lists[i]);
-
-            MPI_Isend(&list_length, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &file_list_length_request);
-            MPI_Send(buffer, list_length, type_file_section, i, 0, MPI_COMM_WORLD);
-
-            free(buffer);
-        }
-    } else {
-        // Receive the info about file sections to work on
-        MPI_Recv(&file_sections_list_length, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        file_sections_list = calloc(file_sections_list_length, sizeof(file_section_node));
-        MPI_Recv(file_sections_list, file_sections_list_length, type_file_section, MASTER, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    if (argc < 3) {
+        printf("Possible usages:\n"
+               "\tmpirun -np <processors> ./MPI-WordsCount -f <filenames>\n"
+               "\tmpirun -np <processors> ./MPI-WordsCount -d <dirname>\n"
+               "\tmpirun -np <processors> ./MPI-WordsCount -mf <masterfile>\n");
+        exit(1);
     }
+
+    // Fill the input files list
+    input_files *input;
+
+    if (!strcmp(argv[1], "-f")) {
+        input = calloc(1, sizeof(input_files));
+        input->files_count = argc - 2;
+
+        for (int i = 2; i < argc; i++) {
+            input->file_names[i - 2] = calloc(strlen(argv[i]) + 1, sizeof(char));
+            strcpy(input->file_names[i - 2], argv[i]);
+        }
+    } else if (!strcmp(argv[1], "-d")) {
+        input = load_files_from_directory(argv[2]);
+    } else if (!strcmp(argv[1], "-mf")) {
+        input = load_files_from_master_file(argv[2]);
+    } else {
+        printf("Unknown option \"%s\".\n", argv[1]);
+        exit(1);
+    }
+
+    // Create a workloads map to determine who has to do what and send the information to each worker
+    loads_map = create_workloads_map(size, input->files_count, input->file_names);
+
+    if (rank == MASTER) {
+        print_workloads_map(loads_map);
+    }
+
+    for (int i = 0; i < input->files_count; i++) {
+        free(input->file_names[i]);
+    }
+
+    free(input);
 
     // Create a words map and count the words in each file section assigned
     words_map = create_words_map();
 
-    for (int i = 0; i < file_sections_list_length; i++) {
-        count_words(file_sections_list[i].file_name, words_map, file_sections_list[i].start_index, file_sections_list[i].end_index);
+    file_section_node = loads_map->lists[rank];
+    
+    while (file_section_node) {
+        count_words(file_section_node->file_name, words_map, file_section_node->start_index, file_section_node->end_index);
+        file_section_node = file_section_node->next;
+    }
+
+    if (rank != MASTER) {
+        free_workloads_map(loads_map);
     }
 
     if (size > 1) {
