@@ -109,7 +109,7 @@ each worker inside the same run).
 The results show a very good behaviour when each worker is assigned a
 _big_ input size. The weak scaling efficiency goes from 45% registered
 with the smallest per-worker input size up to 87% registered in the test
-with the biggest per-worker input size (the one represented with a green
+with the biggest per-worker input size (the one represented with a purple
 line in the above graph is to be considered unreliable).
 
 Overall, execution times seem not to vary too much, implying that this
