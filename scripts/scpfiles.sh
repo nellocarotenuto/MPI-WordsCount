@@ -29,12 +29,18 @@ then
 	do
 		if [[ "$ADDRESS" != "MASTER" ]]
 		then
-			echo "Copying files to $ADDRESS ..."
-			ssh -o StrictHostKeyChecking=no "$USER"@"$ADDRESS" "mkdir -p $PWD"
-			scp -o StrictHostKeyChecking=no -r "$EXECUTABLE" "$DATADIR" "$USER"@"$ADDRESS":"$PWD"
-			echo
+			ADDRESSES+=("$ADDRESS")
+
 		fi
 	done < "$2"
+
+    for ADDRESS in "${ADDRESSES[@]}"
+    do
+        echo "Copying files to $ADDRESS ..."
+        ssh -o StrictHostKeyChecking=no "$USER"@"$ADDRESS" "mkdir -p $PWD"
+        scp -o StrictHostKeyChecking=no -r "$EXECUTABLE" "$DATADIR" "$USER"@"$ADDRESS":"$PWD"
+        echo
+    done
 
     echo "Files copied onto the slaves!"
 else
