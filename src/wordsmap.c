@@ -3,26 +3,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <openssl/evp.h>
-#include <openssl/sha.h>
-
 #include "wordsmap.h"
 
-
-#define HASH_ALGORITHM EVP_sha1()
-#define DIGEST_LENGTH 20
-
-
-/*
- * Helper function that computes the digest of a word and stores it in the location pointed by the third argument.
- */
-void digest_word(const unsigned char *word, size_t word_length, unsigned char **digest, unsigned int *digest_length);
 
 /*
  * Helper function that returns a pointer to the word_node in the list at the specified index of the map referring to the
  * passed word, if exists, NULL otherwise.
  */
 word_node *lookup(const words_map *map, int list_index, const char *word);
+
+/*
+ * Helper function that computes the digest of a word applying Pearson Hashing to the parameter and returning a byte.
+ */
+unsigned char digest_word(const unsigned char *word, int length);
 
 
 words_map *create_words_map() {
@@ -50,18 +43,12 @@ void update_words_map_with_count(words_map *map, const char *word, int count) {
         return;
     }
 
-    digest_length = DIGEST_LENGTH;
-    digest = calloc(digest_length, sizeof(unsigned char));
-
     if (length >= WORD_MAX_LENGTH) {
         printf("The word %s is too long and can't be added to the map.\n", word);
         exit(1);
     }
 
-    digest_word((unsigned char *) word, length, &digest, &digest_length);
-
-    int list = digest[0] % NUMBER_OF_LISTS;
-    free(digest);
+    int list = digest_word(word, length) % NUMBER_OF_LISTS;
 
     update_list(map, list, word, count);
 
@@ -192,36 +179,33 @@ void free_words_map(words_map *map) {
     free(map);
 }
 
+unsigned char digest_word(const unsigned char *word, int length) {
+    unsigned char h;
 
-void digest_word(const unsigned char *word, size_t word_length, unsigned char **digest, unsigned int *digest_length) {
-    EVP_MD_CTX * digest_context = EVP_MD_CTX_create();
+    static const unsigned char T[256] = {
+         98,  6, 85,150, 36, 23,112,164,135,207,169,  5, 26, 64,165,219,
+         61, 20, 68, 89,130, 63, 52,102, 24,229,132,245, 80,216,195,115,
+         90,168,156,203,177,120,  2,190,188,  7,100,185,174,243,162, 10,
+        237, 18,253,225,  8,208,172,244,255,126,101, 79,145,235,228,121,
+        123,251, 67,250,161,  0,107, 97,241,111,181, 82,249, 33, 69, 55,
+         59,153, 29,  9,213,167, 84, 93, 30, 46, 94, 75,151,114, 73,222,
+        197, 96,210, 45, 16,227,248,202, 51,152,252,125, 81,206,215,186,
+         39,158,178,187,131,136,  1, 49, 50, 17,141, 91, 47,129, 60, 99,
+        154, 35, 86,171,105, 34, 38,200,147, 58, 77,118,173,246, 76,254,
+        133,232,196,144,198,124, 53,  4,108, 74,223,234,134,230,157,139,
+        189,205,199,128,176, 19,211,236,127,192,231, 70,233, 88,146, 44,
+        183,201, 22, 83, 13,214,116,109,159, 32, 95,226,140,220, 57, 12,
+        221, 31,209,182,143, 92,149,184,148, 62,113, 65, 37, 27,106,166,
+          3, 14,204, 72, 21, 41, 56, 66, 28,193, 40,217, 25, 54,179,117,
+        238, 87,240,155,180,170,242,212,191,163, 78,218,137,194,175,110,
+         43,119,224, 71,122,142, 42,160,104, 48,247,103, 15, 11,138,239
+    };
 
-    if (!digest_context) {
-        printf("Unable to create digest context for \"%s\".\n", word);
-        exit(1);
+    h = T[word[0]];
+
+    for (size_t i = 1; i < length; ++i) {
+        h = T[h ^ word[i]];
     }
 
-    if (!EVP_DigestInit_ex(digest_context, HASH_ALGORITHM, NULL)) {
-        printf("Unable to set up digest context for \"%s\".\n", word);
-        exit(1);
-    }
-
-    if(!EVP_DigestUpdate(digest_context, word, word_length)) {
-        printf("Unable to update digest context for \"%s\".\n", word);
-        exit(1);
-    }
-
-    *digest = (unsigned char *) OPENSSL_malloc(EVP_MD_size(HASH_ALGORITHM));
-
-    if(*digest == NULL) {
-        printf("Unable to compute digest for \"%s\".\n", word);
-        exit(1);
-    }
-
-    if(!EVP_DigestFinal_ex(digest_context, *digest, digest_length)) {
-        printf("Unable to finalize digest context for \"%s\".\n", word);
-        exit(1);
-    }
-
-    EVP_MD_CTX_destroy(digest_context);
+    return h;
 }

@@ -40,4 +40,4 @@ target_include_directories(fileloader PUBLIC ${PROJECT_SOURCE_DIR}/include)
 add_executable(${PROJECT_NAME} src/main.c)
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE wordsmap counter workloads mpiworkloads mpiwordsmap logger fileloader -lssl -lcrypto ${MPI_C_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE wordsmap counter workloads mpiworkloads mpiwordsmap logger fileloader ${MPI_C_LIBRARIES})

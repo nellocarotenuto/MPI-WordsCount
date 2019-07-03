@@ -1,4 +1,4 @@
-#define NUMBER_OF_LISTS 128
+#define NUMBER_OF_LISTS 256
 #define WORD_MAX_LENGTH 64
 
 /*
