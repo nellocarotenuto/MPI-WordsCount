@@ -7,22 +7,35 @@
 
 EXECUTABLE="MPI-WordsCount"
 REPORTS="reports/"
+EXECTIMES="performances/weakscalability"
 
-if [[ $# -lt 7 ]]
+if [[ $# -lt 9 ]]
 then
     echo "Usage:"
-    echo -e "\t$0 $EXECUTABLE --maxnp <value> --hostfile <hostfile> -f <filenames>"
+    echo -e "\t$0 --maxnp <value> --hostfile <hostfile> --runs <runs> $EXECUTABLE -f <filenames>"
     exit
 fi
 
-if [[ $2 = "--maxnp" ]] && [[ $4 = "--hostfile" ]]
+if [[ $1 = "--maxnp" ]] && [[ $3 = "--hostfile" ]] && [[ $5 = "--runs" ]]
 then
-    MAXNP=$3
-    HOSTFILE=$5
+    mkdir -p "$EXECTIMES"
 
-    if [[ $6 = "-f" ]]
+    MAXNP=$2
+    HOSTFILE=$4
+    RUNS=$6
+
+    if [[ $MAXNP <= 0 ]] || [[ $RUNS <= 0 ]]
     then
-        shift 6
+        echo "Arguments --maxnp and --runs must be positive."
+        exit
+    fi
+
+    DATE="$(date '+%Y-%m-%d %H:%M:%S')"
+    FILENAME="$EXECTIMES/$DATE.csv"
+
+    if [[ $8 = "-f" ]]
+    then
+        shift 8
         FILES=("${@}")
 
         for (( i=1; i<=$MAXNP; i++ ))
@@ -32,20 +45,36 @@ then
                 ARGUMENTS+=("${FILES[@]}")
             done
 
-            echo "Testing with $i processes ... "
-            mpirun -np "$i" --hostfile "$HOSTFILE" "$EXECUTABLE" -f "${ARGUMENTS[@]}" | tail -2
-            echo
+            for (( r=1; r<=$RUNS; r++))
+            do
+
+                echo "Testing with $i processes ... "
+                REPORT="$(mpirun -np "$i" --hostfile "$HOSTFILE" "$EXECUTABLE" -f "${ARGUMENTS[@]}" | tail -2)"
+
+                echo "$REPORT"
+                echo
+
+                TIME="$(echo $REPORT | cut -d' ' -f 3 | cut -d's' -f 1)"
+
+                if [[ $r != $RUNS ]]
+                then
+                    echo -n "$TIME, " >> "$FILENAME"
+                else
+                    echo "$TIME" >> "$FILENAME"
+                fi
+            done
 
             unset ARGUMENTS
         done
     else
-        echo "Unknown $EXECUTABLE option \""$6"\""
+        echo "Unknown $EXECUTABLE option \""$8"\""
         exit
     fi
+
+    echo "Tests done! Check reports in $REPORTS folder."
+    echo "Execution times are reported in $EXECTIMES folder."
+    exit
 else
-    echo "Unknown options \""$2"\" "$4"\"."
+    echo "Unknown options \""$1"\" "$3"\" "$5"\"."
     exit
 fi
-
-echo "Tests done! Check reports in $REPORTS folder."
-exit
