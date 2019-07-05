@@ -24,7 +24,7 @@ then
     HOSTFILE=$4
     RUNS=$6
 
-    if [[ $MAXNP <= 0 ]] || [[ $RUNS <= 0 ]]
+    if [[ "$MAXNP" -le 0 ]] || [[ "$RUNS" -le 0 ]]
     then
         echo "Arguments --maxnp and --runs must be positive."
         exit
@@ -56,7 +56,7 @@ then
 
                 TIME="$(echo $REPORT | cut -d' ' -f 3 | cut -d's' -f 1)"
 
-                if [[ $r != $RUNS ]]
+                if [[ "$r" -ne "$RUNS" ]]
                 then
                     echo -n "$TIME, " >> "$FILENAME"
                 else
@@ -72,7 +72,7 @@ then
     fi
 
     echo "Tests done! Check reports in $REPORTS folder."
-    echo "Execution times are reported in $EXECTIMES folder."
+    echo "Execution times are reported in $FILENAME folder."
     exit
 else
     echo "Unknown options \""$1"\" "$3"\" "$5"\"."

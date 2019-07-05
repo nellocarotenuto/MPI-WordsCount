@@ -25,7 +25,7 @@ then
     HOSTFILE=$4
     RUNS=$6
 
-    if [[ $MAXNP <= 0 ]] || [[ $RUNS <= 0 ]]
+    if [[ "$MAXNP" -le 0 ]] || [[ "$RUNS" -le 0 ]]
     then
         echo "Arguments --maxnp and --runs must be positive."
         exit
@@ -42,7 +42,7 @@ then
         then
             shift 8
 
-            ARGUMENTS="${@}"
+            ARGUMENTS=("$@")
         elif [[ $8 = "-d" ]] || [[ $8 = "-mf" ]]
         then
             ARGUMENTS="$9"
@@ -55,14 +55,14 @@ then
             do
 
                 echo "Testing with $i processes ... "
-                REPORT="$(mpirun -np "$i" --hostfile "$HOSTFILE" "$EXECUTABLE" "$MODE" "$ARGUMENTS" | tail -2)"
+                REPORT="$(mpirun -np "$i" --hostfile "$HOSTFILE" "$EXECUTABLE" "$MODE" "${ARGUMENTS[@]}" | tail -2)"
 
                 echo "$REPORT"
                 echo
 
                 TIME="$(echo $REPORT | cut -d' ' -f 3 | cut -d's' -f 1)"
 
-                if [[ $r != $RUNS ]]
+                if [[ "$r" -ne "$RUNS" ]]
                 then
                     echo -n "$TIME, " >> "$FILENAME"
                 else
