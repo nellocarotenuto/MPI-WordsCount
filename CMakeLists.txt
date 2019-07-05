@@ -8,7 +8,6 @@ project(MPI-WordsCount C)
 set(CMAKE_C_STANDARD 99)
 
 # Require external dependencies
-find_package(OpenSSL 1.0.2 REQUIRED)
 find_package(MPI REQUIRED)
 
 # Include MPI directories
