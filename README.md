@@ -169,9 +169,9 @@ less frequent memory accesses when more processors share the same chip
 ![](docs/weak/executiontimes.png)
 
 Weak scalability tests show a good behavior by the algorithm. Overall,
-execution times seem not to vary too much, implying that this solution
-should be able to solve larger problems in an acceptable amount of time
-by using more resources.
+execution times seem not to vary too much over the per-processor input
+sizes listed above, implying that this solution should be able to solve
+larger problems in an acceptable amount of time by using more resources.
 
 ![](docs/weak/efficiency.png)
 
