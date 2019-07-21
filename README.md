@@ -160,10 +160,14 @@ registering a remarkable peak of 181% with a low of just 123%.
 
 ![](docs/strong/speedup.png)
 
-The speedup shows once more how good the performances are as the input
+The (relative) speedup shows once more how good the performances are as the input
 size is increased. The super-linear behavior is likely to come from the
 less frequent memory accesses when more processors share the same chip
-([more details here](https://stackoverflow.com/questions/4332967/where-does-super-linear-speedup-come-from)).
+([more details here](https://stackoverflow.com/questions/4332967/where-does-super-linear-speedup-come-from))
+but also by poor performances of the parallel algorithm when called
+with a single processor (execution times of purely sequential programs
+implemented didn't achieve much better performances though, this is why
+the parallel algorithm is used as a reference for the sequential execution).
 
 ### Weak scalability
 ![](docs/weak/executiontimes.png)
